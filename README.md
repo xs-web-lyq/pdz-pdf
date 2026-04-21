@@ -4,6 +4,10 @@
 
 This repository is the Python desktop rewrite of the original `pdz-assistant` idea. It keeps the original workflow, but moves the implementation to a Python + PySide6 application that is easier to maintain, package, and publish as a standalone executable.
 
+## Screenshot
+
+![pdz-pdf application screenshot](./Snipaste_2026-04-21_20-21-27.png)
+
 ## Features
 
 - detect `ssReader.exe` status automatically
