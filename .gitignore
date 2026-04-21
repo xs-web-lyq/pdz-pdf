@@ -18,3 +18,8 @@ env/
 
 Thumbs.db
 Desktop.ini
+
+logs/
+build/
+dist/
+*.egg-info/

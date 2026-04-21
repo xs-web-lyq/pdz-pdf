@@ -21,8 +21,8 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QProgressBar,
-    QScrollArea,
     QSizePolicy,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -76,17 +76,7 @@ class MainWindow(QMainWindow):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
 
-        self.scroll_area = QScrollArea(self)
-        self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        outer.addWidget(self.scroll_area)
-
-        self.content_widget = QWidget()
-        self.content_widget.setObjectName("ContentRoot")
-        self.scroll_area.setWidget(self.content_widget)
-
-        root = QVBoxLayout(self.content_widget)
+        root = outer
         root.setContentsMargins(18, 18, 18, 18)
         root.setSpacing(16)
 
@@ -95,23 +85,67 @@ class MainWindow(QMainWindow):
         root.addWidget(self.hero_card)
         self._build_hero_card(self.hero_card)
 
-        self.top_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.top_layout.setSpacing(16)
-        root.addLayout(self.top_layout)
+        self.tab_widget = QTabWidget(self)
+        self.tab_widget.setObjectName("MainTabs")
+        root.addWidget(self.tab_widget, 1)
+
+        self.overview_tab = QWidget()
+        self.overview_tab.setObjectName("TabPage")
+        self.tab_widget.addTab(self.overview_tab, "ssReader \u72b6\u6001")
+
+        self.help_tab = QWidget()
+        self.help_tab.setObjectName("TabPage")
+        self.tab_widget.addTab(self.help_tab, "\u4f7f\u7528\u8bf4\u660e")
+
+        self.export_tab = QWidget()
+        self.export_tab.setObjectName("TabPage")
+        self.tab_widget.addTab(self.export_tab, "\u5bfc\u51fa\u8bbe\u7f6e")
+
+        self.progress_tab = QWidget()
+        self.progress_tab.setObjectName("TabPage")
+        self.tab_widget.addTab(self.progress_tab, "\u8fdb\u5ea6\u9762\u677f")
+
+        self._build_overview_tab()
+        self._build_help_tab()
+        self._build_export_tab()
+        self._build_progress_tab()
+
+    def _build_overview_tab(self) -> None:
+        root = QVBoxLayout(self.overview_tab)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
 
         self.status_card = self._create_panel_card()
-        self.help_card = self._create_panel_card()
-        self.top_layout.addWidget(self.status_card, 5)
-        self.top_layout.addWidget(self.help_card, 4)
+        root.addWidget(self.status_card)
 
         self._build_status_card(self.status_card)
+
+    def _build_help_tab(self) -> None:
+        root = QVBoxLayout(self.help_tab)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
+        self.help_card = self._create_panel_card()
+        root.addWidget(self.help_card)
         self._build_help_card(self.help_card)
 
+    def _build_export_tab(self) -> None:
+        root = QVBoxLayout(self.export_tab)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
         self.export_card = self._create_panel_card()
+        self.export_card.setMinimumHeight(500)
         root.addWidget(self.export_card)
         self._build_export_card(self.export_card)
 
+    def _build_progress_tab(self) -> None:
+        root = QVBoxLayout(self.progress_tab)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
         self.progress_card = self._create_panel_card()
+        self.progress_card.setMinimumHeight(260)
         root.addWidget(self.progress_card)
         self._build_progress_card(self.progress_card)
 
@@ -262,13 +296,16 @@ class MainWindow(QMainWindow):
     def _build_export_card(self, card: QFrame) -> None:
         layout = QVBoxLayout(card)
         layout.setContentsMargins(18, 18, 18, 18)
-        layout.setSpacing(14)
+        layout.setSpacing(10)
+
+        card.setObjectName("WorkspaceCard")
 
         layout.addWidget(self._create_section_title("E", "\u5bfc\u51fa\u8bbe\u7f6e"))
 
         grid = QGridLayout()
         grid.setHorizontalSpacing(14)
-        grid.setVerticalSpacing(12)
+        grid.setVerticalSpacing(8)
+        grid.setColumnMinimumWidth(0, 72)
         grid.setColumnStretch(1, 1)
         grid.setColumnStretch(2, 1)
 
@@ -315,10 +352,18 @@ class MainWindow(QMainWindow):
         self.output_path_hint.setWordWrap(True)
         grid.addWidget(self.output_path_hint, 4, 1, 1, 3)
 
-        layout.addLayout(grid)
+        self.export_form_wrap = QWidget()
+        self.export_form_wrap.setObjectName("ExportFormWrap")
+        self.export_form_wrap.setMinimumHeight(160)
+        form_layout = QVBoxLayout(self.export_form_wrap)
+        form_layout.setContentsMargins(0, 0, 0, 0)
+        form_layout.setSpacing(0)
+        form_layout.addLayout(grid)
+        self.export_form_wrap.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        layout.addWidget(self.export_form_wrap)
 
         self.export_actions_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.export_actions_layout.setSpacing(12)
+        self.export_actions_layout.setSpacing(8)
         self.export_actions_layout.addWidget(self.delete_png_checkbox)
         self.export_actions_layout.addStretch(1)
         self.export_actions_layout.addWidget(self.open_buffer_button)
@@ -330,6 +375,8 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(card)
         layout.setContentsMargins(18, 18, 18, 18)
         layout.setSpacing(14)
+
+        card.setObjectName("WorkspaceCard")
 
         layout.addWidget(self._create_section_title("P", "\u8fdb\u5ea6\u9762\u677f"))
 
@@ -414,14 +461,11 @@ class MainWindow(QMainWindow):
     def _update_responsive_layout(self) -> None:
         width = self.width()
 
-        if width < 1260:
-            self.top_layout.setDirection(QBoxLayout.Direction.TopToBottom)
-            self.status_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-            self.help_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        else:
-            self.top_layout.setDirection(QBoxLayout.Direction.LeftToRight)
-            self.status_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-            self.help_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.status_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.help_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.export_card.setMinimumHeight(500)
+        self.progress_card.setMinimumHeight(300 if width < 1180 else 260)
+        self.export_form_wrap.setMinimumHeight(200 if width < 1180 else 160)
 
         if width < 980:
             self.hero_layout.setDirection(QBoxLayout.Direction.TopToBottom)
@@ -459,25 +503,40 @@ class MainWindow(QMainWindow):
                 font-family: 'Microsoft YaHei UI';
                 font-size: 14px;
             }
-            QWidget#ContentRoot {
+            QWidget#TabPage {
                 background: transparent;
             }
-            QScrollArea {
+            QTabWidget#MainTabs::pane {
+                border: 1px solid #33455d;
+                border-radius: 18px;
+                background: rgba(18, 27, 40, 0.46);
+                margin-top: 12px;
+            }
+            QTabBar::tab {
+                min-width: 156px;
+                min-height: 42px;
+                padding: 0 22px;
+                margin-right: 10px;
+                border: 1px solid #49607d;
+                border-bottom: none;
+                border-top-left-radius: 16px;
+                border-top-right-radius: 16px;
+                background: rgba(37, 49, 68, 0.96);
+                color: #aebfd6;
+                font-weight: 800;
+            }
+            QTabBar::tab:selected {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #4f76a4, stop:1 #365a84);
+                color: #ffffff;
+                border-color: #8eb3df;
+            }
+            QTabBar::tab:hover:!selected {
+                background: rgba(50, 65, 88, 0.96);
+                color: #dfe9f7;
+            }
+            QTabBar {
                 background: transparent;
-            }
-            QScrollBar:vertical {
-                background: rgba(16, 23, 35, 0.35);
-                width: 10px;
-                margin: 8px 4px 8px 0;
-                border-radius: 5px;
-            }
-            QScrollBar::handle:vertical {
-                background: rgba(112, 145, 188, 0.65);
-                min-height: 28px;
-                border-radius: 5px;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                height: 0px;
             }
             QFrame#HeroCard {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
@@ -490,6 +549,15 @@ class MainWindow(QMainWindow):
                     stop:0 #1b2534, stop:1 #202c3d);
                 border: 1px solid #2e3b50;
                 border-radius: 20px;
+            }
+            QFrame#WorkspaceCard {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #1d2838, stop:1 #212d3e);
+                border: 1px solid #32445b;
+                border-radius: 20px;
+            }
+            QWidget#ExportFormWrap {
+                background: transparent;
             }
             QLabel#HeroEyebrow {
                 color: #9ebce7;
@@ -569,6 +637,7 @@ class MainWindow(QMainWindow):
                 color: #9fb3ca;
                 font-size: 12px;
                 padding-top: 2px;
+                padding-bottom: 4px;
             }
             QLabel#PathCaption {
                 color: #93abc8;
@@ -635,9 +704,9 @@ class MainWindow(QMainWindow):
                     stop:0 #5688c0, stop:1 #355e89);
             }
             QPushButton#PrimaryButton:disabled {
-                background: #2a3646;
-                border-color: #415062;
-                color: #8c97a7;
+                background: #334155;
+                border-color: #51627a;
+                color: #a4b0c0;
             }
             QPushButton#SecondaryButton {
                 background: #1d2837;
